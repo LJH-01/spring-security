@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/security
+    http://www.springframework.org/schema/security/spring-security.xsd">
+
+
+    <!-- 把登陆页面和失败页面不拦截 -->
+    <security:http pattern="/login.html" security="none"/>
+    <security:http pattern="/error.html" security="none"/>
+    <security:http pattern="/favicon.jsp" security="none"/>
+    <!--静态资源放行-->
+    <security:http pattern="/css/**" security="none"/>
+    <security:http pattern="/img/**" security="none"/>
+    <security:http pattern="/plugins/**" security="none"/>
+
+    <!--
+        配置拦截的规则
+        auto-config="使用自带的页面"
+        use-expressions="是否使用spel表达式"，如果使用表达式：hasRole('ROLE_USER')
+    -->
+    <security:http auto-config="true" use-expressions="false">
+        <!-- 配置拦截的请求地址/**：所有地址，任何请求地址都必须有ROLE_USER的权限 -->
+        <security:intercept-url pattern="/**" access="ROLE_USER"/>
+        <!-- 配置安全框架具体的页面跳转 -->
+        <!--login-page：指定登录界面
+        login-processing-url：登录的请求路径，登录必须使用该路径
+        default-target-url：登陆成果后进入的界面
+        authentication-failure-url：认证失败后的界面-->
+        <security:form-login
+                login-page="/login.html"
+                login-processing-url="/login"
+                default-target-url="/success.html"
+                authentication-failure-url="/error.html"
+        />
+        <!-- 关闭跨站请求伪造（Cross-site request forgery） -->
+        <security:csrf disabled="true"/>
+        <!-- 退出 invalidate-session：是否清除session
+        logout-url:必需使用该值来退出-->
+        <security:logout invalidate-session="true" logout-url="/logout" logout-success-url="/login.html"/>
+    </security:http>
+
+    <!-- 在内存中临时提供用户名和密码的数据 -->
+    <!-- 配置认证（登录）信息 -->
+    <security:authentication-manager>
+        <!--认证信息的提供者-->
+        <security:authentication-provider>
+            <!--用户的服务对象-->
+            <security:user-service>
+                <!--用户信息：是否是临时账号和密码
+                {noop}不使用密码加密
+                authorities用户的认证角色-->
+                <security:user name="admin" password="{noop}admin" authorities="ROLE_USER"/>
+            </security:user-service>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+</beans>
